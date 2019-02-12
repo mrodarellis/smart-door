@@ -8,6 +8,7 @@ Basic Smart Door Systems
 For the implementation proposed, the user can have four different ways to use these are : fingerprint, NFC, Keypad and application.
 2. Activity monitoring and recording system Allows recording of video in a database of events occurring in front of the door.
 Smart locking subsystems
+
 1st lock unlock depending on how the door locks and/or unlocks.
 
 The activation modes are: 1.Fingerprint 2. nfc card, 3. keypad and 4. Application
