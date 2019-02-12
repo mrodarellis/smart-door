@@ -7,6 +7,8 @@ Basic Smart Door Systems
 1. Smart lock Allows opening and closing the door lock.
 For the implementation proposed, the user can have four different ways to use these are : fingerprint, NFC, Keypad and application.
 2. Activity monitoring and recording system Allows recording of video in a database of events occurring in front of the door.
+
+
 Smart locking subsystems
 
 1st lock unlock depending on how the door locks and/or unlocks.
