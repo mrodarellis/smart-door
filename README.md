@@ -8,14 +8,21 @@ Basic Smart Door Systems
 For the implementation proposed, the user can have four different ways to use. These are : application, fingerprint, NFC and keypad.
 2. Activity monitoring and recording system. Allows recording of video in a database of events occurring in front of the door.
 Smart locking subsystems
+
 1st Lock Unlock - locks and/or unlocks the door.
 
 The activation modes are: 1.Application 2.fingerprint  3.nfc card and 4. keypad. 
+
 2nd Android Application - locks and/or unlocks the door
+
 3rd Fingerprint reader - receives a fingerprint and accordingly locks and/or unlocks the door. The AS608/FPM10A Optical Fingerprint Reader Sensor was used.
+
 4th NFC reader - reads a card and locks and/or unlocks the door accordingly. Two types of nfc cards was explored one at 125 kHz and one at 13.56 MHz.
+
 5th Keypad reader - accepts a password and locks and/or unlocks the door accordingly
+
 6th Imaging system can be triggered by proximity, motion and by the 2,3,4 and 5 systems. The VGA CIF OV7670 CMOS Camera was used.
+
 7th subsystem Database logging system. records facts, data , statistics via WiFi to Influxdb data base. Also sends a relevant email notification.
 
 Keywords
