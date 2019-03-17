@@ -2,6 +2,7 @@ Abstract
 The «Smart Door» is a door that has the right sensors to understand its environment and responds appropriately to it and at the same time to record and store important events for its users. With the information it stores it can be considered as a device of the IoT (Internet of things)
 For the «Smart door an implementation using micro controllers» project, the intelligent door construction can include a smart lock and a simple tracking and recording system.
 The work will present the ability to construct a complex environment using very simple and inexpensive microcontrollers. The basic microcontroller  selections to be used are ESP32 and ESP8266.
+
 Basic Smart Door Systems
 1. Smart lock Allows opening and closing the door lock.
 For the implementation proposed, the user can have four different ways to use. These are : application, fingerprint, NFC and keypad.
