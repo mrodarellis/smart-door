@@ -9,6 +9,7 @@ For the implementation proposed, the user can have four different ways to use. T
 2. Activity monitoring and recording system. Allows recording of video in a database of events occurring in front of the door.
 Smart locking subsystems
 1st Lock Unlock - locks and/or unlocks the door.
+
 The activation modes are: 1.Application 2.fingerprint  3.nfc card and 4. keypad. 
 2nd Android Application - locks and/or unlocks the door
 3rd Fingerprint reader - receives a fingerprint and accordingly locks and/or unlocks the door. The AS608/FPM10A Optical Fingerprint Reader Sensor was used.
