@@ -31,9 +31,9 @@ const esp_now_peer_info_t *peer = &slave;
 const esp_now_peer_info_t *peer1 = &slave1;
 const uint8_t *peer_addr = slave.peer_addr;
 const uint8_t *peer_addr1 = slave.peer_addr;
-
+int id;
 struct __attribute__((packed)) SENSOR_DATA {
-   char testdata[40];
+   char testdata[20];
 } sensorData;
 // uint8_t bs[sizeof(sensorData)];
 
@@ -67,11 +67,16 @@ senddata();  */
 bool senddata() {
   data++;
  
-    Serial.print("Slave Status: ");
-     
-     
- 
-
+    
+    sensorData.testdata[15]=id+48;
+     sensorData.testdata[4] = 'f';
+  sensorData.testdata[5] = 'i';
+  sensorData.testdata[6] = 'g';
+     sensorData.testdata[7] = 'e';
+  sensorData.testdata[8] = 'r';
+ Serial.println("data to send"); 
+Serial.println(sensorData.testdata);  //Show data on Serial Monitor
+Serial.print("Slave Status: ");
 /*  esp_now_send(NULL, data, len);/* the demo will send to two devices which added by esp_now_add_peer() 
  esp_now_send(mac_addr, data, len); send to the specified mac_addr */ 
  uint8_t bs[sizeof(sensorData)];
@@ -102,7 +107,7 @@ bool senddata() {
   } else {
     Serial.println("Not sure what happened");
   }
-   Serial.print("Sending: "); Serial.println(data);
+ //  Serial.print("Sending: "); Serial.println(*bs);
 
  
   esp_err_t result1 = esp_now_send(slave1.peer_addr, bs,  sizeof(sensorData));  
@@ -179,7 +184,7 @@ void setup()
    
     slave.channel = CHANNEL; // pick a channel
     slave.encrypt = 0; // no encryption
-
+for (int i = 0; i < 19; ++i)  sensorData.testdata[i] = '0';
     esp_err_t addStatus = esp_now_add_peer(peer);
    if (addStatus == ESP_OK) {
         // Pair success
@@ -297,6 +302,7 @@ uint8_t getFingerprintID() {
 }
 
 // returns -1 if failed, otherwise returns ID #
+
 int getFingerprintIDez() {
   uint8_t p = finger.getImage();
   if (p != FINGERPRINT_OK)  return -1;
@@ -310,11 +316,13 @@ int getFingerprintIDez() {
   // found a match!
   Serial.print("Found ID #"); Serial.print(finger.fingerID); 
   Serial.print(" with confidence of "); Serial.println(finger.confidence);
-  
-  itoa(finger.fingerID, sensorData.testdata, 4);
-  
-Serial.println("data to send"); 
-Serial.println(sensorData.testdata);  //Show data on Serial Monitor
+ 
+//  itoa(finger.fingerID, id, 10);
+// sensorData.testdata[1]=finger.fingerID;
+  id=finger.fingerID;
+//  Serial.println(id);
+// Serial.println("data to send"); 
+// Serial.println(sensorData.testdata);  //Show data on Serial Monitor
 
 //  display.setLogBuffer(5, 30);
   display.clear(); 

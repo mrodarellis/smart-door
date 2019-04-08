@@ -1,0 +1,2 @@
+const char* ssid = "Foundation";                // WIFI network name
+const char* password = "towifi8aexeikodikopolidiskolo";           // WIFI network password

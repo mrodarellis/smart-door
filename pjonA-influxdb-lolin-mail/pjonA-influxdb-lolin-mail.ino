@@ -25,8 +25,11 @@ PJON<SoftwareBitBang> bus(44);
 
 #pragma region Globals
 
-const char* ssid = "put your ssid";                // WIFI network name
-const char* password = "put your wifi password";           // WIFI network password
+//const char* ssid = "put your ssid";                // WIFI network name
+//const char* password = "put your wifi password";           // WIFI network password
+const char* ssid = "foundation";                // WIFI network name
+const char* password = "towifi8aexeikodikopolidiskolo";           // WIFI network password
+
 
 uint8_t connection_state = 0;           // Connected to WIFI or not
 uint16_t reconnect_interval = 5000;    // If not connected wait time to try again
@@ -39,7 +42,7 @@ uint16_t reconnect_interval = 5000;    // If not connected wait time to try agai
 String address[] = {"mrodarellis@gmail.com"};
 
 
-const char *INFLUXDB_HOST = "192.168.1.1";
+const char *INFLUXDB_HOST = "192.168.1.103";
 const uint16_t INFLUXDB_PORT = 8086;
 
 const char *DATABASE = "test1";
@@ -49,7 +52,7 @@ const char *DB_PASSWORD = "12345678";
 Influxdb influxdb(INFLUXDB_HOST, INFLUXDB_PORT);
 
 struct __attribute__((packed)) SENSOR_DATA {
-   char testdata[40];
+   char testdata[20];
 } sensorData;
 
 /************* connect wifi
@@ -156,7 +159,7 @@ delay(50);
     retry++;
         delay(500);
         Serial.print(WiFi.status());
-        if (retry == 50) // or Simply Restart
+        if (retry == 100) // or Simply Restart
          ESP.restart();
       
     }
@@ -266,11 +269,14 @@ void receiver_function(uint8_t *payload, uint16_t length, const PJON_Packet_Info
         
      
          row.addTag("node", sensorData.testdata); // Add pin tag string
-        row.addField("val", payload[0]); // Add value field ascii value
+//        row.addField("val", payload[0]); // Add value field ascii value
+            row.addField("val", 0); // Add value field ascii value
+//  influxdb.write(row) ;
   
          Serial.println(influxdb.write(row) == DB_SUCCESS ? "Object write success"
-                       : "Writing failed");
-//                       ESP.restart();
+                       : "Writing failed"); 
+               row.empty();        
+  //                    ESP.restart();
  /*       influxdb.write(row);
        Serial.println("Object write success");*/
 /* Empty field object.

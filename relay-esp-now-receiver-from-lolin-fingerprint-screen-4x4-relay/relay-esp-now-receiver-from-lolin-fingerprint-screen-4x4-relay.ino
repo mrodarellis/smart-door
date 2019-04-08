@@ -60,7 +60,7 @@ void OnDataRecv(uint8_t *mac_addr, uint8_t *data, uint8_t len) {
 }
 
 void loop() {
-  if (millis() - timeout > 9000) {
+  if (millis() - timeout > 20000) {
     Serial.println("Waiting for data ...");
     timeout = millis();
     digitalWrite(relayPin, HIGH);  //Set the pin to LOW (0V)

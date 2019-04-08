@@ -4,7 +4,7 @@
 PJON<SoftwareBitBang> bus(45);
 
 struct __attribute__((packed)) SENSOR_DATA {
-   char testdata[40];
+   char testdata[20];
 } sensorData;
 
 // uint8_t bs[sizeof(sensorData)];
@@ -91,6 +91,7 @@ void OnDataRecv(const uint8_t *mac_addr, const uint8_t *data, int data_len) {
            mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4], mac_addr[5]);
            Serial.println("");
             memcpy(&sensorData, data, sizeof(sensorData));
+ // memcpy(&sensorData, data, sizeof(data));
 // Serial.println(sensorData.testdata);
     Serial.println();  
   Serial.print("Last Packet Recv from: "); Serial.println(macStr);

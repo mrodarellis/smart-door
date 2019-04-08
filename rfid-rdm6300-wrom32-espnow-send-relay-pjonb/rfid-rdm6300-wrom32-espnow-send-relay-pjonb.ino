@@ -22,7 +22,7 @@ const uint8_t *peer_addr = slave.peer_addr;
 const uint8_t *peer_addr1 = slave.peer_addr;
 
 struct __attribute__((packed)) SENSOR_DATA {
-   char testdata[40];
+   char testdata[20];
 } sensorData;
 // uint8_t bs[sizeof(sensorData)];
 
@@ -72,7 +72,9 @@ bool senddata() {
      
      
   Serial.print("Sending: "); Serial.println(inString);
-
+sensorData.testdata[15] = 'n';
+  sensorData.testdata[16] = 'f';
+  sensorData.testdata[17] = 'c';
    uint8_t bs[sizeof(sensorData)];
   memcpy(bs, &sensorData, sizeof(sensorData));
   
@@ -204,7 +206,7 @@ void setup(){
        } else {
         Serial.println("Not sure what happened");
       }
-
+ for (int i = 0; i < 19; ++i)  sensorData.testdata[i] = '0';
  if(!SD.begin()){
         Serial.println("Card Mount Failed");
         return;
@@ -258,6 +260,7 @@ void loop(){
        readFile(SD, "/hello.txt");
        Serial.flush();                   //Flush port
        senddata()   ;
+       delay(500);
     }
   }
 
@@ -276,7 +279,7 @@ void loop(){
        }
        //Serial.println();
        memcpy(data1, &inString, sizeof(inString));
-       
+       delay(500);
        serOutIndx = 0;
        serInIndx  = 0;
    
