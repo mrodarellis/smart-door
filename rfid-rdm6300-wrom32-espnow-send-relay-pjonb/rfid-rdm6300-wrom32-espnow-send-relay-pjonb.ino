@@ -9,17 +9,23 @@
 
  esp_now_peer_info_t slave ;
   esp_now_peer_info_t slave1 ; 
+  esp_now_peer_info_t slave2 ; 
   
- static  uint8_t mac1[] =  {0x61, 0x53, 0xc5, 0x3a, 0x7d  , 0x80} ;//pjonb 
+static  uint8_t mac1[] =  {0x61, 0x53, 0xc5, 0x3a, 0x7d, 0x80} ;//pjonb 
 static  uint8_t mac[] =  {0x5E, 0xCF, 0x7F, 0xAB, 0xB4, 0xB5}; //8266 nodemcu amica relay
+static  uint8_t mac2[] = {0x3A, 0x2B, 0x78, 0x04, 0xEF, 0x2A}; // relay B
+
 ///////////////////////////////////////////////////////////////////////////////////
 uint8_t data = 0;
 uint8_t data1[12];
 
 const esp_now_peer_info_t *peer = &slave;
 const esp_now_peer_info_t *peer1 = &slave1;
+const esp_now_peer_info_t *peer2 = &slave2;
+
 const uint8_t *peer_addr = slave.peer_addr;
-const uint8_t *peer_addr1 = slave.peer_addr;
+const uint8_t *peer_addr1 = slave1.peer_addr;
+const uint8_t *peer_addr2 = slave2.peer_addr;
 
 struct __attribute__((packed)) SENSOR_DATA {
    char testdata[20];
@@ -68,7 +74,7 @@ void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status) {
 bool senddata() {
   data++;
  
-    Serial.print("Slave Status: ");
+//    Serial.print("Slave Status: ");
      
      
   Serial.print("Sending: "); Serial.println(inString);
@@ -78,18 +84,21 @@ sensorData.testdata[15] = 'n';
    uint8_t bs[sizeof(sensorData)];
   memcpy(bs, &sensorData, sizeof(sensorData));
   
-    
-  esp_err_t result = esp_now_send(peer_addr, bs, sizeof(sensorData));
+   esp_err_t result = esp_now_send(slave.peer_addr, bs, sizeof(sensorData));
+   result_p(result);
+ Serial.print("Sending: "); Serial.println(data);
  
+  esp_err_t result1 = esp_now_send(slave1.peer_addr, bs,  sizeof(sensorData));  
+   result_p(result1);
+ 
+  delay(500);   // must set for amica */
+  esp_err_t result2 = esp_now_send(slave2.peer_addr, bs,  sizeof(sensorData));  
+   result_p(result2);
+}
 
-/*   esp_err_t result = esp_now_send(peer_addr, data1, sizeof(data1)); 
-  esp_err_t result = esp_now_send(peer_addr, &data, sizeof(data));  */
-  
-/*  const uint8_t broadcast[] = {0x59, 0x00, 0xfb, 0xa4, 0xae  , 0x30};
-  esp_err_t result = esp_now_send(broadcast, &data, sizeof(data));
-
-  esp_err_t result2 = esp_now_send(nullptr, &data, sizeof(data)); */
-  
+//*****************************************************************************
+void result_p(esp_err_t result)
+{
   Serial.print("Send Status: ");
   if (result == ESP_OK) {
     Serial.println("Success");
@@ -107,40 +116,7 @@ sensorData.testdata[15] = 'n';
   } else {
     Serial.println("Not sure what happened");
   }
-
- Serial.print("Sending: "); Serial.println(data);
-
- 
-  esp_err_t result1 = esp_now_send(slave1.peer_addr, bs,  sizeof(sensorData));  
-  
-  
-/*  const uint8_t broadcast[] = {0x59, 0x00, 0xfb, 0xa4, 0xae  , 0x30};
-  esp_err_t result = esp_now_send(broadcast, &data, sizeof(data));
-
-  esp_err_t result2 = esp_now_send(nullptr, &data, sizeof(data)); */
-  
-  Serial.print("Send Status: ");
-  if (result1 == ESP_OK) {
-    Serial.println("Success");
-  } else if (result == ESP_ERR_ESPNOW_NOT_INIT) {
-    // How did we get so far!!
-    Serial.println("ESPNOW not Init.");
-  } else if (result == ESP_ERR_ESPNOW_ARG) {
-    Serial.println("Invalid Argument");
-  } else if (result == ESP_ERR_ESPNOW_INTERNAL) {
-    Serial.println("Internal Error");
-  } else if (result == ESP_ERR_ESPNOW_NO_MEM) {
-    Serial.println("ESP_ERR_ESPNOW_NO_MEM");
-  } else if (result == ESP_ERR_ESPNOW_NOT_FOUND) {
-    Serial.println("Peer not found.");
-  } else {
-    Serial.println("Not sure what happened");
-  }
-  
 }
-
-//*****************************************************************************
-
 
 void setup(){
   
@@ -206,6 +182,29 @@ void setup(){
        } else {
         Serial.println("Not sure what happened");
       }
+       for (int i = 0; i < 6; ++i)  { 
+   
+    slave2.peer_addr[i] = (uint8_t)mac2[i];
+    Serial.println(slave2.peer_addr[i],HEX);
+    }
+        esp_err_t addStatus2 = esp_now_add_peer(peer2);
+   if (addStatus2 == ESP_OK) {
+        // Pair success
+        Serial.println("Pair success");
+      } else if (addStatus == ESP_ERR_ESPNOW_NOT_INIT) {
+        // How did we get so far!!
+        Serial.println("ESPNOW Not Init");
+      } else if (addStatus == ESP_ERR_ESPNOW_ARG) {
+        Serial.println("Invalid Argument");
+       } else if (addStatus == ESP_ERR_ESPNOW_FULL) {
+        Serial.println("Peer list full");
+      } else if (addStatus == ESP_ERR_ESPNOW_NO_MEM) {
+        Serial.println("Out of memory");
+      } else if (addStatus == ESP_ERR_ESPNOW_EXIST) {
+        Serial.println("Peer Exists");
+       } else {
+        Serial.println("Not sure what happened");
+      } 
  for (int i = 0; i < 19; ++i)  sensorData.testdata[i] = '0';
  if(!SD.begin()){
         Serial.println("Card Mount Failed");
@@ -247,17 +246,17 @@ void loop(){
 //    Serial1.write(serInString);         //Push it through port 1 to Device B
 //    Serial.write(serInString);          //Show data on Serial Monitor
     Serial.print(inString);               //Show data on Serial Monitor
-    appendFile(SD, "/hello.txt", inString); //Write data on SD
+//    appendFile(SD, "/hello.txt", inString); //Write data on SD
     Serial.println();
-    readFile(SD, "/hello.txt");
+//    readFile(SD, "/hello.txt");
     Serial.flush();                       //erase any data on serial port after operation 
   } 
      if (Serial1.available())            //If data is received through Serial 1 from Device B...
     {    
        readSerial1String ();
        Serial.print(inString);           //Show data on Serial Monitor
-       appendFile(SD, "/hello.txt", inString); //Write data on SD
-       readFile(SD, "/hello.txt");
+//       appendFile(SD, "/hello.txt", inString); //Write data on SD
+//       readFile(SD, "/hello.txt");
        Serial.flush();                   //Flush port
        senddata()   ;
        delay(500);

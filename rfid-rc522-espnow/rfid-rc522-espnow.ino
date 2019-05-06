@@ -1,13 +1,11 @@
-//master/sender ESP-8266
+/*
+Many thanks to nikxha from the ESP8266 forum
+*/
 
-//#include <Arduino.h>
 #include <ESP8266WiFi.h>
-//#include <Ticker.h>
+#include <SPI.h>
+#include "MFRC522.h"
 
-#include <Wire.h>
-#include <Keypad_I2C.h>
-#include <Keypad.h>
-#define I2CADDR 0x27
 struct __attribute__((packed)) SENSOR_DATA {
    char testdata[20];
 } sensorData;
@@ -20,22 +18,27 @@ extern "C" {
   #include <user_interface.h>
 }
 
-const byte ROWS = 4; //four rows
-const byte COLS = 4; //three columns
-char keys[ROWS][COLS] = {
-  {'1','2','3','4'},
-  {'5','6','7','8'},
-  {'9','A','B','C'},
-  {'*','0','#','&'}
-};
+/* wiring the MFRC522 to ESP8266 (ESP-12)
+RST     = GPIO5
+SDA(SS) = GPIO4 
+MOSI    = GPIO13
+MISO    = GPIO12
+SCK     = GPIO14
+GND     = GND
+3.3V    = 3.3V
+*/
 
-// Digitran keypad, bit numbers of PCF8574 i/o port
-byte rowPins[ROWS] = {0, 1, 2, 3}; //connect to the row pinouts of the keypad
-byte colPins[COLS] = {4, 5, 6, 7}; //connect to the column pinouts of the keypad
+#define RST_PIN  5  // RST-PIN für RC522 - RFID - SPI - Modul GPIO5 
+#define SS_PIN  4  // SDA-PIN für RC522 - RFID - SPI - Modul GPIO4 
 
-Keypad_I2C kpd( makeKeymap(keys), rowPins, colPins, ROWS, COLS, I2CADDR, PCF8574 );
+const char *ssid =  "foundation";     // change according to your Network - cannot be longer than 32 characters!
+const char *pass =  "towifi8aexeikodikopolidiskolo"; // change according to your Network
 
+MFRC522 mfrc522(SS_PIN, RST_PIN); // Create MFRC522 instance
+byte readCard[4];
+byte checkCard[4] = {215, 153, 101, 69};
 
+//************************************************************************
 typedef struct esp_now_peer_info {
     u8 peer_addr[6];    /**< ESPNOW peer MAC address that is also the MAC address of station or softap */
     uint8_t channel;                        /**< Wi-Fi channel that peer uses to send/receive ESPNOW data. If the value is 0,
@@ -96,8 +99,16 @@ void sendData() {
   }
   delay(100);*/
    uint8_t bs[sizeof(sensorData)];
+  
   memcpy(bs, &sensorData, sizeof(sensorData));
   
+  Serial.println();
+   Serial.print("data to sent: --->  ");
+  for (int i = 0; i < 4; i++)       
+    Serial.print(sensorData.testdata[i],HEX);  
+     for (int i = 4; i < 20; i++)       
+    Serial.print(sensorData.testdata[i]);  
+    Serial.println();
     
   int result = esp_now_send(remoteMac2, bs, sizeof(sensorData));
   Serial.print("Send Command: ");
@@ -106,7 +117,7 @@ void sendData() {
   } else {
     Serial.println("Failed " + String(result));
   }
- 
+ delay(500);   // must set for wemos rc522
 }
 
 // callback when data is sent from Master to Slave
@@ -115,21 +126,39 @@ esp_now_send_cb_t OnDataSent(const uint8_t *mac_addr, u8 status) {
   snprintf(macStr, sizeof(macStr), "%02x:%02x:%02x:%02x:%02x:%02x",
            mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4], mac_addr[5]);
   Serial.print("Last Packet Sent to: "); Serial.println(macStr);
-  Serial.print("Last Packet Send Status: "); Serial.println(status == 0 ? "Delivery Success" : "Delivery Fail");
+  Serial.print("Last Packet Send Status: "); Serial.println(status == 0 ? "Delivery Success   ********" : "Delivery Fail    ********");
 }
 
+//************************************************************************
+
+
 void setup() {
+  Serial.begin(115200);    // Initialize serial communications
+  delay(250);
+  Serial.println(F("Booting...."));
   
-   Wire.begin( );
-    kpd.begin( makeKeymap(keys) );
-    Serial.begin(115200);
-  //   ESP.wdtDisable();  // turns off watchdog?
-     Serial.println( );
-    Serial.println( "start keypad 4x4 espnow pjonb Esp-now-sender-i2ckeypad4x4-password" );
+  SPI.begin();           // Init SPI bus
+  mfrc522.PCD_Init();    // Init MFRC522
+  
+ /* WiFi.begin(ssid, pass);
+  
+  int retries = 0;
+  while ((WiFi.status() != WL_CONNECTED) && (retries < 2)) {
+    retries++;
+    delay(500);
+    Serial.print(".");
+  }
+  if (WiFi.status() == WL_CONNECTED) {
+    Serial.println(F("WiFi connected"));
+  } */
+
+  //********************************************************************************
+ Serial.println( );
+    Serial.println( "start nfc rc522" );
     
   //Set device in STA mode to begin with
   WiFi.mode(WIFI_STA);
-  Serial.println("ESPNow keypad 4x4");
+  Serial.println("ESPNow rc522");
   // This is the mac address of the Master in Station Mode
   Serial.print("STA MAC: "); Serial.println(WiFi.macAddress());
   // Init ESPNow with a fallback logic
@@ -146,9 +175,11 @@ void setup() {
     Serial.println("Pair failed");
   }
   for (int i = 0; i < 19; ++i)  sensorData.testdata[i] = '0';
-  sensorData.testdata[5] = 'k';
-  sensorData.testdata[6] = 'b';
-  sensorData.testdata[7] = 'r';
+   sensorData.testdata[15] = 'r';
+   sensorData.testdata[16] = 'c';
+   sensorData.testdata[17] = '5';
+   sensorData.testdata[18] = '2';
+   sensorData.testdata[19] = '2';
    int addStatus1 = esp_now_add_peer((u8*)remoteMac1, ESP_NOW_ROLE_CONTROLLER, CHANNEL, NULL, 0);
   if (addStatus1 == 0) {
     // Pair success
@@ -157,8 +188,7 @@ void setup() {
     Serial.println("Pair failed");
   }
 
-   
-  esp_now_register_send_cb([](uint8_t* macaddre, uint8_t status) {
+   esp_now_register_send_cb([](uint8_t* macaddre, uint8_t status) {
     printMacAddress(macaddre);
    
     if (status == 0) {
@@ -173,52 +203,67 @@ void setup() {
     Serial.printf("[SUCCESS] = %lu/%lu \r\n", ok, ok+fail);
   });
 
+
+
+ //*********************************************************************************
+  
+  Serial.println(F("Ready!"));
+  Serial.println(F("======================================================")); 
+  Serial.println(F("Scan for Card and print UID:"));
 }
 
- char getnewkey() {
-  char key=0;
-  while (key == 0) {
-           key = kpd.getKey();
-//          ESP.wdtFeed();
-                   }  
-if (key) return(key);
+
+
+void loop() { 
+  // Look for new cards
+  if ( ! mfrc522.PICC_IsNewCardPresent()) {
+    delay(500);
+    return;
+  }
+  // Select one of the cards
+  if ( ! mfrc522.PICC_ReadCardSerial()) {
+    delay(50);
+    return;
+  }
+  // Show some details of the PICC (that is: the tag/card)
+  Serial.print(F("Card UID:"));
+  dump_byte_array(mfrc522.uid.uidByte, mfrc522.uid.size);
+//  for (int i = 0; i < 19; ++i)  sensorData.testdata[i] = '0';
+   Serial.println("Scanned PICC's UID:");
+   for (int i = 0; i < 4; i++) {  //
+    readCard[i] = mfrc522.uid.uidByte[i];
+    Serial.print(readCard[i], HEX);
+//   Serial.print(checkCard[i], HEX);
+    sensorData.testdata[i]=readCard[i];
+    
   }
  
-void loop() {
-   char key = kpd.getKey();
-    
-    if (key){
-    Serial.println(key);
-    data = char(key);
-    Serial.println(data);
-    if (key=='A') {
-      Serial.println("ok A");
-      data = char(key);
-      sensorData.testdata[1] = char(key);
-       Serial.print("----->");
-              Serial.println(data); 
-         
-                
-          key = getnewkey();
-//          ESP.wdtFeed();
-                                 
-               if (key=='*') {
-               Serial.println("ok *");
-               data = char(key);
-               sensorData.testdata[2] = char(key);
-               Serial.print("----->");
-               Serial.println(data);     
-           
+// Serial.println();
+ 
+//  Serial.println();   
+        
          for (int i = 0; i < 6; i++)  remoteMac2[i]=remoteMac1[i];
          sendData();
          for (int i = 0; i < 6; i++)  remoteMac2[i]=remoteMac[i];
-                  sendData(); 
-                    for (int i = 0; i < 6; i++)  remoteMac2[i]=remoteMac3[i];
+         sendData();  
+         for (int i = 0; i < 6; i++)  remoteMac2[i]=remoteMac3[i];
          sendData();
-               }
-                        }
-                       }
-   
-     }           
-             
+  
+/* String myString = String((char *)mfrc522.uid.uidByte);
+ Serial.println("myString:");
+  Serial.println(myString);*/
+  
+}
 
+// Helper routine to dump a byte array as hex values to Serial
+void dump_byte_array(byte *buf, byte bufferSize) {
+  Serial.println(bufferSize);
+  for (byte i = 0; i < bufferSize; i++) {
+  //  Serial.print(buf[i] < 0x10 ? " 0" : " ");
+  //  Serial.print(buf[i], HEX);
+  Serial.print(buf[i], HEX);
+        }
+        
+         Serial.println();
+   
+}

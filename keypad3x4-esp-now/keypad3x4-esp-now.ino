@@ -1,13 +1,23 @@
-//master/sender ESP-8266
 
-//#include <Arduino.h>
+// Include Libraries
+#include "Arduino.h"
 #include <ESP8266WiFi.h>
-//#include <Ticker.h>
+#include "Keypad.h"
 
-#include <Wire.h>
-#include <Keypad_I2C.h>
-#include <Keypad.h>
-#define I2CADDR 0x27
+
+// Pin Definitions
+#define KEYPADMEM3X4_PIN_ROW1	2
+#define KEYPADMEM3X4_PIN_ROW2	14
+#define KEYPADMEM3X4_PIN_ROW3	12
+#define KEYPADMEM3X4_PIN_ROW4	13
+#define KEYPADMEM3X4_PIN_COL1	5
+#define KEYPADMEM3X4_PIN_COL2	4
+#define KEYPADMEM3X4_PIN_COL3	0
+
+struct __attribute__((packed)) SENSOR_DATA {
+   char testdata[20];
+} sensorData;
+// uint8_t bs[sizeof(sensorData)];
 
 
 
@@ -16,21 +26,21 @@ extern "C" {
   #include <user_interface.h>
 }
 
-const byte ROWS = 4; //four rows
-const byte COLS = 4; //three columns
-char keys[ROWS][COLS] = {
-  {'1','2','3','4'},
-  {'5','6','7','8'},
-  {'9','A','B','C'},
-  {'*','0','#','&'}
+// Global variables and defines
+//Use this 2D array to map the keys as you desire
+char keypadmem3x4keys[ROWS][COLS] = {
+{'1','2','3'},
+{'4','5','6'},
+{'7','8','9'},
+{'*','0','#'}
 };
+// object initialization
+Keypad keypadmem3x4(KEYPADMEM3X4_PIN_COL1,KEYPADMEM3X4_PIN_COL2,KEYPADMEM3X4_PIN_COL3,KEYPADMEM3X4_PIN_ROW1,KEYPADMEM3X4_PIN_ROW2,KEYPADMEM3X4_PIN_ROW3,KEYPADMEM3X4_PIN_ROW4);
 
-// Digitran keypad, bit numbers of PCF8574 i/o port
-byte rowPins[ROWS] = {0, 1, 2, 3}; //connect to the row pinouts of the keypad
-byte colPins[COLS] = {4, 5, 6, 7}; //connect to the column pinouts of the keypad
 
-Keypad_I2C kpd( makeKeymap(keys), rowPins, colPins, ROWS, COLS, I2CADDR, PCF8574 );
+char key1=' ',key2=' ';
 
+//****************************************************
 
 typedef struct esp_now_peer_info {
     u8 peer_addr[6];    /**< ESPNOW peer MAC address that is also the MAC address of station or softap */
@@ -45,7 +55,7 @@ typedef struct esp_now_peer_info {
 // uint8_t PEER[] {0x59, 0x00, 0xfb, 0xa4, 0xae, 0x30}; // esp32 A
  //static  uint8_t mac[] =  {0x61, 0x53, 0xc5, 0x3a, 0x7d, 0x80} ; //pjonb
  //static  uint8_t mac[] =  {0x5E, 0xCF, 0x7F, 0xAB, 0xB4, 0xB5}; //8266 nodemcu amica 
-// static  uint8_t mac[] =  {0x2E, 0x3A, 0xE8, 0x26, 0x3E, 0xCA}; //8266 FEMALE keypad
+ // static  uint8_t mac[] =  {0x2E, 0x3A, 0xE8, 0x26, 0x3E, 0xCA}; //8266 FEMALE keypad
  //static  uint8_t mac[] =  {0x59, 0x00, 0xFB, 0xA4, 0xAE  , 0x30} ;
  //static uint8_t mac[] =  {0x30, 0xAE, 0xA4, 0xFB, 0x00  , 0x59} ;
 
@@ -56,6 +66,8 @@ uint8_t remoteMac3[] = {0x3A, 0x2B, 0x78, 0x04, 0xEF, 0x2A}; // relay B
 
 uint8_t data = 1;
 bool retry = true;
+bool keyok = false;
+
  static uint32_t ok = 0;
  static uint32_t fail = 0;
 
@@ -83,15 +95,26 @@ void InitESPNow() {
 
 void sendData() {
   // data++;
-  int result = esp_now_send(remoteMac2, &data, sizeof(data));
+ /* int result = esp_now_send(remoteMac2, &data, sizeof(data));
   Serial.print("Send Command: ");
   if (result ==0) {
     Serial.println("Success " + String(result));
   } else {
     Serial.println("Failed " + String(result));
   }
-  delay(100);
- 
+  delay(100);*/
+   uint8_t bs[sizeof(sensorData)];
+  memcpy(bs, &sensorData, sizeof(sensorData));
+  
+    
+  int result = esp_now_send(remoteMac2, bs, sizeof(sensorData));
+  Serial.print("Send Command: ");
+  if (result ==0) {
+    Serial.println("Success " + String(result));
+  } else {
+    Serial.println("Failed " + String(result));
+  }
+ delay(100);
 }
 
 // callback when data is sent from Master to Slave
@@ -103,13 +126,21 @@ esp_now_send_cb_t OnDataSent(const uint8_t *mac_addr, u8 status) {
   Serial.print("Last Packet Send Status: "); Serial.println(status == 0 ? "Delivery Success" : "Delivery Fail");
 }
 
-void setup() {
-  
-   Wire.begin( );
-    kpd.begin( makeKeymap(keys) );
+
+// Setup the essentials for your circuit to work. It runs first every time your circuit is powered with electricity.
+void setup() 
+{
+    // Setup Serial which is useful for debugging
+    // Use the Serial Monitor to view printed messages
     Serial.begin(115200);
-     Serial.println( );
-    Serial.println( "start keypad 4x4 espnow pjonb" );
+    while (!Serial) ; // wait for serial port to connect. Needed for native USB
+    Serial.println();
+    Serial.println("start");
+    
+    //Initialize the keypad with selected key map
+    keypadmem3x4.begin(keypadmem3x4keys);
+  Serial.println( );
+    Serial.println( "start keypad 4x4 espnow pjonb Esp-now-sender-i2ckeypad4x4-password" );
     
   //Set device in STA mode to begin with
   WiFi.mode(WIFI_STA);
@@ -129,7 +160,13 @@ void setup() {
   } else {
     Serial.println("Pair failed");
   }
-  
+  for (int i = 0; i < 19; ++i)  sensorData.testdata[i] = '0';
+  sensorData.testdata[5] = 'k';
+  sensorData.testdata[6] = 'b';
+  sensorData.testdata[7] = 'r';
+  sensorData.testdata[8] = '3';
+  sensorData.testdata[9] = 'x';
+  sensorData.testdata[10] = '4';
    int addStatus1 = esp_now_add_peer((u8*)remoteMac1, ESP_NOW_ROLE_CONTROLLER, CHANNEL, NULL, 0);
   if (addStatus1 == 0) {
     // Pair success
@@ -153,32 +190,45 @@ void setup() {
     }
     Serial.printf("[SUCCESS] = %lu/%lu \r\n", ok, ok+fail);
   });
-
+    
 }
 
-   
+ char read_key() {
+// Membrane 3x4 Matrix Keypad - Test Code
+//  Read keypad
+//    char key = keypadmem3x4.getKey();
+
+    char key = keypadmem3x4.getKey();
  
-void loop() {
-   char key = kpd.getKey();
-    
-    if (key){
-    Serial.println(key);
-    data = char(key);
-    Serial.println(data);
-    if (key=='A') {
-      Serial.println("ok A");
-      data = char(key);
-       Serial.println("-----");
-       Serial.println(data); 
+    if (key)    Serial.println(key);
+    return(key);
+     
+           
+}
+
+// Main logic of your circuit. It defines the interaction between the components you selected. After setup, it runs over and over again, in an eternal loop.
+void checkkey() 
+{
+      key1=read_key();
+      if (key1=='5' ) {Serial.println("ok key1 5 ");
+      
        for (int i = 0; i < 6; i++)  remoteMac2[i]=remoteMac1[i];
-        sendData();
+         sendData();
          for (int i = 0; i < 6; i++)  remoteMac2[i]=remoteMac[i];
-         sendData();
-          for (int i = 0; i < 6; i++)  remoteMac2[i]=remoteMac3[i];
-         sendData();
-                        }
-                       }
-   
-                
-             }
+         sendData(); 
+         for (int i = 0; i < 6; i++)  remoteMac2[i]=remoteMac3[i];
+         sendData();            
+      }              
+     }
+
+void loop() {
+  checkkey();
+  delay(200);
+}
+                     
+    
+
+
+
+
 

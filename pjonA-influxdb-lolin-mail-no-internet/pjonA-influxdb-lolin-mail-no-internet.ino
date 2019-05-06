@@ -169,6 +169,7 @@ WiFi.disconnect();
 // WiFi.mode(WIFI_AP_STA);
 // WiFi.mode(WIFI_AP);
 delay(50);
+/*
   WiFi.begin(ssid, password, CHANNEL);
    while (WiFi.status() != WL_CONNECTED) {
     retry++;
@@ -178,7 +179,7 @@ delay(50);
          ESP.restart();
       
     }
-
+*/
     Serial.println("Ready");
     Serial.println("WiFi connected.");
     Serial.println("IP address: ");
