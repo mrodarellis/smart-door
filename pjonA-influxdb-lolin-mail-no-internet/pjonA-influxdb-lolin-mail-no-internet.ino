@@ -28,8 +28,8 @@ PJON<SoftwareBitBang> bus(44);
 
 //const char* ssid = "put your ssid";                // WIFI network name
 //const char* password = "put your wifi password";           // WIFI network password
-const char* ssid = "foundation";                // WIFI network name
-const char* password = "towifi8aexeikodikopolidiskolo";           // WIFI network password
+const char* ssid = ".......";                // WIFI network name
+const char* password = ".................";           // WIFI network password
 
 
 uint8_t connection_state = 0;           // Connected to WIFI or not
