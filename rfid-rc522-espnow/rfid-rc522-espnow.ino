@@ -5,6 +5,8 @@ Many thanks to nikxha from the ESP8266 forum
 #include <ESP8266WiFi.h>
 #include <SPI.h>
 #include "MFRC522.h"
+#include <Arduino.h>
+
 
 struct __attribute__((packed)) SENSOR_DATA {
    char testdata[20];
@@ -104,8 +106,11 @@ void sendData() {
   
   Serial.println();
    Serial.print("data to sent: --->  ");
-  for (int i = 0; i < 4; i++)       
-    Serial.print(sensorData.testdata[i],HEX);  
+  for (int i = 0; i < 4; i++)      { 
+    Serial.print(sensorData.testdata[i],HEX); 
+ 
+  }
+     Serial.print("------");  
      for (int i = 4; i < 20; i++)       
     Serial.print(sensorData.testdata[i]);  
     Serial.println();
@@ -235,6 +240,8 @@ void loop() {
     Serial.print(readCard[i], HEX);
 //   Serial.print(checkCard[i], HEX);
     sensorData.testdata[i]=readCard[i];
+       if ( sensorData.testdata[i]>=122)  sensorData.testdata[i]=sensorData.testdata[i]-128;
+    if ( sensorData.testdata[i]<=48)  sensorData.testdata[i]=sensorData.testdata[i]+48;
     
   }
  

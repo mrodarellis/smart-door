@@ -96,7 +96,7 @@ void OnDataRecv(const uint8_t *mac_addr, const uint8_t *data, int data_len) {
     Serial.println();  
   Serial.print("Last Packet Recv from: "); Serial.println(macStr);
   Serial.print("Last Packet Recv Data: "); Serial.println(sensorData.testdata);
-  delay(50);
+//  delay(50);
    bus.send(44, (const char*) sensorData.testdata, sizeof(sensorData.testdata));
 //  bus.send(44, (const char*) data, sizeof(data));
 
@@ -125,7 +125,7 @@ void receiver_function(uint8_t *payload, uint16_t length, const PJON_Packet_Info
      overwritten when a new message is dispatched */
   if((char)payload[0] == 'B') {
   //  if(!bus.update()) senddata(); 
-    delay(50);
+ //   delay(50);
     Serial.println("reply to a"); 
   //  senddata();
  // readdata();
@@ -149,7 +149,7 @@ void senddata()
 };
 
 void loop() {
-  bus.receive(5000);
+  bus.receive(50000);
   bus.update();
 };
 

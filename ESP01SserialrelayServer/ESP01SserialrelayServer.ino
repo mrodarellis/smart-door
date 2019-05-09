@@ -9,7 +9,7 @@
 #include <ESP8266WebServer.h>
 #define LoadPin 2// GPIO2 
 
-const char *ssid = "smartdoor";
+const char *ssid = "smartdoor-serial3";
 const char *password = "12345678";
 int stateLED = LOW;
 const byte miBufferON[] = {0xA0, 0x01, 0x01, 0xA2};
