@@ -166,8 +166,8 @@ void receiver_function(uint8_t *payload, uint16_t length, const PJON_Packet_Info
 //*******************************************************
  
  
-SMTP.setEmail("mrodarellis@gmail.com")
-    .setPassword("qwerty&764")
+SMTP.setEmail(".............")
+    .setPassword("............")
     .Subject("smart door 2019")
     .setFrom("smart door 2019")
     .setForGmail();           // simply sets port to 465 and setServer("smtp.gmail.com");           
