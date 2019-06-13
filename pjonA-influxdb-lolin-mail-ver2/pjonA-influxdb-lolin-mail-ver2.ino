@@ -173,7 +173,7 @@ SMTP.setEmail(".............")
     .setForGmail();           // simply sets port to 465 and setServer("smtp.gmail.com");           
                             
                              //  if(SMTP.Send("Recipient Email, use comma for multiple recipients", message)) {
-    if(SMTP.Send("mrodarellis@gmail.com", sensorData.testdata)) {
+    if(SMTP.Send(".............", sensorData.testdata)) {
     Serial.println(F("Message sent"));
   } else {
     Serial.print(F("Error sending message: "));
