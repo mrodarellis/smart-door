@@ -50,7 +50,7 @@ uint16_t reconnect_interval = 5000;    // If not connected wait time to try agai
 
 
 // String address[] = {"email1", "email2"};
-String address[] = {"mrodarellis@gmail.com"};
+String address[] = {"................."};
 
 
 /* const char *INFLUXDB_HOST = "192.168.1.103";
